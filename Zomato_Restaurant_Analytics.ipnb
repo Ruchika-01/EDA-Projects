@@ -1,0 +1,814 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "3cd6a913",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:01.865507Z",
+     "iopub.status.busy": "2026-01-03T18:09:01.865121Z",
+     "iopub.status.idle": "2026-01-03T18:09:01.875176Z",
+     "shell.execute_reply": "2026-01-03T18:09:01.873854Z"
+    },
+    "papermill": {
+     "duration": 0.019175,
+     "end_time": "2026-01-03T18:09:01.877713",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:01.858538",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Zomato analytics project\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Zomato analytics project\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "f5a11e83",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:01.888280Z",
+     "iopub.status.busy": "2026-01-03T18:09:01.887896Z",
+     "iopub.status.idle": "2026-01-03T18:09:02.511009Z",
+     "shell.execute_reply": "2026-01-03T18:09:02.509858Z"
+    },
+    "papermill": {
+     "duration": 0.630787,
+     "end_time": "2026-01-03T18:09:02.512935",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:01.882148",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Path to dataset files: /kaggle/input/zomato-restaurants-in-india\n"
+     ]
+    }
+   ],
+   "source": [
+    "import kagglehub\n",
+    "\n",
+    "# Download latest version\n",
+    "path = kagglehub.dataset_download(\"rabhar/zomato-restaurants-in-india\")\n",
+    "\n",
+    "print(\"Path to dataset files:\", path)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d907567a",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004057,
+     "end_time": "2026-01-03T18:09:02.521124",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:02.517067",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Restaurant analytics can be very useful for companies like Swiggy and Zomato. It helps them understand which restaurants are in high demand, which cuisines are more preferred in different cities, and how much revenue different locations contribute. Analytics also shows how wide their delivery coverage is across various pin codes and how customers are responding in different regions.\n",
+    "\n",
+    "Based on these insights, they can make smarter business decisions such as:\n",
+    "\n",
+    "\n",
+    "* optimizing recommendations\n",
+    "* improving delivery coverage\n",
+    "* designing city-specific marketing strategies\n",
+    "* enhancing customer experience\n",
+    "* helping restaurants grow through data-driven insights\n",
+    "\n",
+    "In this project, I explore restaurant data to uncover meaningful insights about demand, pricing, cuisines, ratings, and city-wise behavior."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "81d8f96e",
+   "metadata": {
+    "papermill": {
+     "duration": 0.003977,
+     "end_time": "2026-01-03T18:09:02.529559",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:02.525582",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "**Dataset**\n",
+    "For this analysis, I have used the **Zomato Restaurants in India** dataset from Kaggle.  \n",
+    "It contains detailed information about restaurants across various Indian cities, including:\n",
+    "- Restaurant Name  \n",
+    "- City / Location  \n",
+    "- Cuisines  \n",
+    "- Ratings and Votes  \n",
+    "- Average Cost  \n",
+    "- Delivery and Dining Details\n",
+    "\n",
+    "  Dataset Source: https://www.kaggle.com/datasets/rabhar/zomato-restaurants-in-india\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "8abb1b59",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:02.539908Z",
+     "iopub.status.busy": "2026-01-03T18:09:02.538703Z",
+     "iopub.status.idle": "2026-01-03T18:09:05.911787Z",
+     "shell.execute_reply": "2026-01-03T18:09:05.910500Z"
+    },
+    "papermill": {
+     "duration": 3.380907,
+     "end_time": "2026-01-03T18:09:05.914458",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:02.533551",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import seaborn as sns\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "accfc9cb",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:05.925648Z",
+     "iopub.status.busy": "2026-01-03T18:09:05.924828Z",
+     "iopub.status.idle": "2026-01-03T18:09:05.930314Z",
+     "shell.execute_reply": "2026-01-03T18:09:05.929279Z"
+    },
+    "papermill": {
+     "duration": 0.013787,
+     "end_time": "2026-01-03T18:09:05.932686",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:05.918899",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#Seaborn style setting\n",
+    "sns.set(style=\"whitegrid\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "09573146",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:05.944000Z",
+     "iopub.status.busy": "2026-01-03T18:09:05.942708Z",
+     "iopub.status.idle": "2026-01-03T18:09:05.969094Z",
+     "shell.execute_reply": "2026-01-03T18:09:05.967992Z"
+    },
+    "papermill": {
+     "duration": 0.034318,
+     "end_time": "2026-01-03T18:09:05.971302",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:05.936984",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['zomato_restaurants_in_India.csv']"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import os\n",
+    "os.listdir('/kaggle/input/zomato-restaurants-in-india')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "53bf5e45",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:05.981873Z",
+     "iopub.status.busy": "2026-01-03T18:09:05.981478Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.036185Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.034837Z"
+    },
+    "papermill": {
+     "duration": 6.062623,
+     "end_time": "2026-01-03T18:09:12.038257",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:05.975634",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 211944 entries, 0 to 211943\n",
+      "Data columns (total 26 columns):\n",
+      " #   Column                Non-Null Count   Dtype  \n",
+      "---  ------                --------------   -----  \n",
+      " 0   res_id                211944 non-null  int64  \n",
+      " 1   name                  211944 non-null  object \n",
+      " 2   establishment         211944 non-null  object \n",
+      " 3   url                   211944 non-null  object \n",
+      " 4   address               211810 non-null  object \n",
+      " 5   city                  211944 non-null  object \n",
+      " 6   city_id               211944 non-null  int64  \n",
+      " 7   locality              211944 non-null  object \n",
+      " 8   latitude              211944 non-null  float64\n",
+      " 9   longitude             211944 non-null  float64\n",
+      " 10  zipcode               48757 non-null   object \n",
+      " 11  country_id            211944 non-null  int64  \n",
+      " 12  locality_verbose      211944 non-null  object \n",
+      " 13  cuisines              210553 non-null  object \n",
+      " 14  timings               208070 non-null  object \n",
+      " 15  average_cost_for_two  211944 non-null  int64  \n",
+      " 16  price_range           211944 non-null  int64  \n",
+      " 17  currency              211944 non-null  object \n",
+      " 18  highlights            211944 non-null  object \n",
+      " 19  aggregate_rating      211944 non-null  float64\n",
+      " 20  rating_text           211944 non-null  object \n",
+      " 21  votes                 211944 non-null  int64  \n",
+      " 22  photo_count           211944 non-null  int64  \n",
+      " 23  opentable_support     211896 non-null  float64\n",
+      " 24  delivery              211944 non-null  int64  \n",
+      " 25  takeaway              211944 non-null  int64  \n",
+      "dtypes: float64(4), int64(9), object(13)\n",
+      "memory usage: 42.0+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Load Data\n",
+    "df = pd.read_csv(\"/kaggle/input/zomato-restaurants-in-india/zomato_restaurants_in_India.csv\")\n",
+    "df.head()\n",
+    "df.shape\n",
+    "df.info()\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "bcf985af",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.048662Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.048223Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.054916Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.053943Z"
+    },
+    "papermill": {
+     "duration": 0.014687,
+     "end_time": "2026-01-03T18:09:12.057273",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.042586",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Index(['res_id', 'name', 'establishment', 'url', 'address', 'city', 'city_id',\n",
+       "       'locality', 'latitude', 'longitude', 'zipcode', 'country_id',\n",
+       "       'locality_verbose', 'cuisines', 'timings', 'average_cost_for_two',\n",
+       "       'price_range', 'currency', 'highlights', 'aggregate_rating',\n",
+       "       'rating_text', 'votes', 'photo_count', 'opentable_support', 'delivery',\n",
+       "       'takeaway'],\n",
+       "      dtype='object')"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.columns\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "eccf226c",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004401,
+     "end_time": "2026-01-03T18:09:12.066113",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.061712",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "**Data Cleaning**"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "136c48de",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004326,
+     "end_time": "2026-01-03T18:09:12.074792",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.070466",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "**Removing irrelevant columns**\n",
+    "\n",
+    "\n",
+    "The following columns don’t add analytical value for EDA:\n",
+    "\n",
+    "\n",
+    "* url: This only contains the restaurant’s Zomato webpage link.\n",
+    "* address:The address is a long unstructured text field. Most insights related to location can already be derived from structured fields like city, locality, zipcode\n",
+    "* city_id: This is simply a numeric mapping of the city column. Since the city name itself is already available and more readable, city_id becomes redundant and unnecessary for analysis.\n",
+    "* country_id: This dataset only contains restaurants from India, so the country is the same for all rows.\n",
+    "* locality_verbose:This is a detailed descriptive version of locality, but we already have structured and cleaner locality and city columns.\n",
+    "\n",
+    "These columns were dropped because they either serve as identifiers, URLs, redundant information, or unstructured text that does not contribute to meaningful insights in exploratory data analysis.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "c3f9e929",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.086081Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.085338Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.153806Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.152889Z"
+    },
+    "papermill": {
+     "duration": 0.0764,
+     "end_time": "2026-01-03T18:09:12.155934",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.079534",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df = df.drop(columns=['url','city_id','country_id','locality_verbose','address'])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "2d4609c3",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.167088Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.166712Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.172965Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.172010Z"
+    },
+    "papermill": {
+     "duration": 0.014857,
+     "end_time": "2026-01-03T18:09:12.175211",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.160354",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Index(['res_id', 'name', 'establishment', 'city', 'locality', 'latitude',\n",
+       "       'longitude', 'zipcode', 'cuisines', 'timings', 'average_cost_for_two',\n",
+       "       'price_range', 'currency', 'highlights', 'aggregate_rating',\n",
+       "       'rating_text', 'votes', 'photo_count', 'opentable_support', 'delivery',\n",
+       "       'takeaway'],\n",
+       "      dtype='object')"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.columns"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "56db2725",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004561,
+     "end_time": "2026-01-03T18:09:12.185086",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.180525",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "**Handling Missing Values**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "bf6562ac",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.196559Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.196235Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.309181Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.308266Z"
+    },
+    "papermill": {
+     "duration": 0.120871,
+     "end_time": "2026-01-03T18:09:12.311067",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.190196",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "res_id                       0\n",
+       "name                         0\n",
+       "establishment                0\n",
+       "city                         0\n",
+       "locality                     0\n",
+       "latitude                     0\n",
+       "longitude                    0\n",
+       "zipcode                 163187\n",
+       "cuisines                  1391\n",
+       "timings                   3874\n",
+       "average_cost_for_two         0\n",
+       "price_range                  0\n",
+       "currency                     0\n",
+       "highlights                   0\n",
+       "aggregate_rating             0\n",
+       "rating_text                  0\n",
+       "votes                        0\n",
+       "photo_count                  0\n",
+       "opentable_support           48\n",
+       "delivery                     0\n",
+       "takeaway                     0\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.isnull().sum()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "dba7d4bb",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004444,
+     "end_time": "2026-01-03T18:09:12.320202",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.315758",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "• Removed zipcode because it had a very high percentage of missing values and offered limited analytical value.\n",
+    "\n",
+    "• Dropped rows with missing cuisines since cuisine information is essential for analysis.\n",
+    "\n",
+    "• Filled missing timings values with “Not Available”.\n",
+    "\n",
+    "• Removed opentable_support column as it is not relevant for analysis\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "c1a0de01",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.331220Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.330344Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.499028Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.497869Z"
+    },
+    "papermill": {
+     "duration": 0.176714,
+     "end_time": "2026-01-03T18:09:12.501314",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.324600",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df = df.drop(columns=['zipcode'])\n",
+    "df = df.dropna(subset=['cuisines'])\n",
+    "df['timings'] = df['timings'].fillna(\"Not Available\")\n",
+    "df = df.drop(columns=['opentable_support'])\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1a864887",
+   "metadata": {
+    "papermill": {
+     "duration": 0.00467,
+     "end_time": "2026-01-03T18:09:12.510618",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.505948",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "**Removing Duplicate**\n",
+    "Since multiple duplicate restaurant entries existed in the dataset, duplicates were identified using the unique res_id column. Only one entry per restaurant was retained and the rest were removed to ensure unbiased and accurate analysis."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "8971239a",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.521656Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.520658Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.531842Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.530832Z"
+    },
+    "papermill": {
+     "duration": 0.019092,
+     "end_time": "2026-01-03T18:09:12.534146",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.515054",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "np.int64(155455)"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df['res_id'].duplicated().sum()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "05ac89dd",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.545310Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.544963Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.573638Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.572668Z"
+    },
+    "papermill": {
+     "duration": 0.036901,
+     "end_time": "2026-01-03T18:09:12.575702",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.538801",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df = df.drop_duplicates(subset=['res_id'])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "1174d908",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.587100Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.586760Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.593717Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.592817Z"
+    },
+    "papermill": {
+     "duration": 0.014939,
+     "end_time": "2026-01-03T18:09:12.595705",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.580766",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(55098, 19)"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "307eb2ef",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.607864Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.607464Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.614675Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.613846Z"
+    },
+    "papermill": {
+     "duration": 0.01535,
+     "end_time": "2026-01-03T18:09:12.616585",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.601235",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "np.int64(0)"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\n",
+    "df['res_id'].duplicated().sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "7790d8e6",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-01-03T18:09:12.628889Z",
+     "iopub.status.busy": "2026-01-03T18:09:12.627777Z",
+     "iopub.status.idle": "2026-01-03T18:09:12.780091Z",
+     "shell.execute_reply": "2026-01-03T18:09:12.778564Z"
+    },
+    "papermill": {
+     "duration": 0.161532,
+     "end_time": "2026-01-03T18:09:12.783012",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.621480",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "!git config --global user.name \"Ruchika-01\"\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "31615dee",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005123,
+     "end_time": "2026-01-03T18:09:12.793037",
+     "exception": false,
+     "start_time": "2026-01-03T18:09:12.787914",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "datasetId": 288523,
+     "sourceId": 593194,
+     "sourceType": "datasetVersion"
+    }
+   ],
+   "dockerImageVersionId": 31239,
+   "isGpuEnabled": false,
+   "isInternetEnabled": true,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.12"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 15.332815,
+   "end_time": "2026-01-03T18:09:13.520701",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2026-01-03T18:08:58.187886",
+   "version": "2.6.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
